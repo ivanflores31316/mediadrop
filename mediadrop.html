@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediaDrop — Comparte sin perder calidad</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --bg2:#111118;
+  --bg3:#1a1a26;
+  --bg4:#22223a;
+  --accent:#7c6ef7;
+  --accent2:#a78bfa;
+  --accent3:#c4b5fd;
+  --pink:#f472b6;
+  --teal:#2dd4bf;
+  --text:#f0eeff;
+  --text2:#b0a8d0;
+  --text3:#6b6490;
+  --border:#2a2748;
+  --border2:#3d3a6a;
+  --card:#151522;
+  --radius:14px;
+  --radius-sm:8px;
+  --shadow:0 4px 32px rgba(124,110,247,0.12);
+}
+html{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+body{min-height:100vh;overflow-x:hidden}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:60px;
+  background:rgba(10,10,15,0.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;
+  background:linear-gradient(135deg,var(--accent2),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:-0.02em;
+}
+.nav-actions{display:flex;gap:.75rem;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem 1.1rem;border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;
+  cursor:pointer;transition:all .18s;border:none;text-decoration:none;
+}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:0 0 20px rgba(124,110,247,.35);
+}
+.btn-primary:hover{background:#8f82fa;box-shadow:0 0 28px rgba(124,110,247,.5);transform:translateY(-1px)}
+.btn-sm{padding:.3rem .8rem;font-size:.8rem}
+.btn-danger{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b}
+.btn-danger:hover{background:#991b1b}
+.btn-teal{background:rgba(45,212,191,.15);color:var(--teal);border:1px solid rgba(45,212,191,.3)}
+.btn-teal:hover{background:rgba(45,212,191,.25)}
+
+/* ─── PAGES ─── */
+.page{display:none;padding-top:60px;min-height:100vh}
+.page.active{display:block}
+
+/* ─── HERO / AUTH ─── */
+.auth-wrap{
+  display:flex;align-items:center;justify-content:center;
+  min-height:calc(100vh - 60px);padding:2rem;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(124,110,247,.1) 0%,transparent 70%);
+}
+.auth-card{
+  width:100%;max-width:420px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:2.5rem;
+  box-shadow:var(--shadow);
+}
+.auth-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:1.6rem;
+  margin-bottom:.4rem;color:var(--text);
+}
+.auth-sub{color:var(--text3);font-size:.875rem;margin-bottom:2rem}
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:.8rem;font-weight:500;color:var(--text2);margin-bottom:.5rem;letter-spacing:.02em}
+.field input{
+  width:100%;padding:.7rem 1rem;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:.9rem;
+  font-family:'DM Sans',sans-serif;transition:border-color .15s;
+  outline:none;
+}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,110,247,.15)}
+.field input::placeholder{color:var(--text3)}
+.auth-submit{width:100%;padding:.8rem;margin-top:.5rem;font-size:.95rem;border-radius:var(--radius-sm)}
+.auth-switch{
+  text-align:center;margin-top:1.5rem;font-size:.85rem;color:var(--text3);
+}
+.auth-switch a{color:var(--accent2);cursor:pointer;text-decoration:none;font-weight:500}
+.auth-switch a:hover{color:var(--accent3)}
+.error-msg{
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+  color:#fca5a5;border-radius:var(--radius-sm);padding:.65rem 1rem;
+  font-size:.85rem;margin-bottom:1rem;display:none;
+}
+.success-msg{
+  background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+  color:var(--teal);border-radius:var(--radius-sm);padding:.65rem 1rem;
+  font-size:.85rem;margin-bottom:1rem;display:none;
+}
+
+/* ─── DASHBOARD ─── */
+.dash-layout{display:flex;min-height:calc(100vh - 60px)}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  padding:1.5rem 1rem;position:sticky;top:60px;height:calc(100vh - 60px);
+  overflow-y:auto;
+}
+.sidebar-section{margin-bottom:1.75rem}
+.sidebar-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:.6rem;padding:0 .5rem}
+.sidebar-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.55rem .75rem;border-radius:var(--radius-sm);
+  color:var(--text2);font-size:.875rem;cursor:pointer;
+  transition:all .15s;margin-bottom:.15rem;
+}
+.sidebar-item:hover{background:var(--bg3);color:var(--text)}
+.sidebar-item.active{background:rgba(124,110,247,.15);color:var(--accent2);font-weight:500}
+.sidebar-item .icon{font-size:1rem;width:18px;text-align:center}
+.user-info{
+  margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:.75rem;
+}
+.avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0;
+}
+.user-name{font-size:.85rem;font-weight:500;color:var(--text)}
+.user-email{font-size:.75rem;color:var(--text3)}
+
+/* MAIN CONTENT */
+.main-content{flex:1;padding:2rem;overflow-y:auto;max-height:calc(100vh - 60px)}
+.page-header{margin-bottom:2rem}
+.page-header h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:.25rem}
+.page-header p{color:var(--text2);font-size:.9rem}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.25rem;
+}
+.stat-icon{font-size:1.3rem;margin-bottom:.75rem}
+.stat-value{font-family:'Syne',sans-serif;font-weight:700;font-size:1.6rem;color:var(--text);margin-bottom:.2rem}
+.stat-label{font-size:.8rem;color:var(--text3)}
+
+/* UPLOAD ZONE */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:var(--radius);
+  padding:3rem 2rem;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--card);margin-bottom:2rem;
+  position:relative;
+}
+.upload-zone:hover,.upload-zone.drag{
+  border-color:var(--accent);background:rgba(124,110,247,.05);
+}
+.upload-icon{font-size:2.5rem;margin-bottom:1rem;display:block}
+.upload-zone h3{font-family:'Syne',sans-serif;font-weight:600;font-size:1.1rem;margin-bottom:.4rem}
+.upload-zone p{color:var(--text2);font-size:.875rem}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-note{color:var(--text3);font-size:.8rem;margin-top:.75rem}
+
+/* PROGRESS */
+.progress-wrap{display:none;margin-bottom:2rem}
+.progress-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem 1.25rem;margin-bottom:.75rem;
+}
+.progress-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem}
+.file-icon{font-size:1.2rem}
+.file-name{font-size:.875rem;font-weight:500;flex:1;truncate:ellipsis;overflow:hidden;white-space:nowrap}
+.file-size{font-size:.8rem;color:var(--text3)}
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--pink));border-radius:2px;transition:width .2s}
+.progress-label{font-size:.75rem;color:var(--text3);margin-top:.4rem}
+
+/* MEDIA GRID */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-title{font-family:'Syne',sans-serif;font-weight:600;font-size:1rem}
+.view-toggle{display:flex;gap:.35rem}
+.view-btn{
+  padding:.3rem .5rem;border-radius:var(--radius-sm);background:transparent;
+  border:1px solid var(--border);color:var(--text3);cursor:pointer;font-size:.9rem;
+  transition:all .15s;
+}
+.view-btn.active{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+.media-grid.list{grid-template-columns:1fr}
+
+.media-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:all .2s;group:hover;
+}
+.media-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.media-thumb{
+  width:100%;aspect-ratio:1;object-fit:cover;display:block;
+  background:var(--bg3);position:relative;
+}
+.media-thumb-wrap{position:relative;overflow:hidden}
+.media-thumb-wrap img,.media-thumb-wrap video{width:100%;height:160px;object-fit:cover;display:block;background:var(--bg3)}
+.media-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0);
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  transition:background .2s;opacity:0;
+}
+.media-card:hover .media-overlay{background:rgba(0,0,0,.6);opacity:1}
+.media-badge{
+  position:absolute;top:.5rem;right:.5rem;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  border-radius:4px;padding:.15rem .4rem;font-size:.7rem;color:#fff;
+}
+.media-info{padding:.75rem}
+.media-name{font-size:.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.25rem}
+.media-meta{font-size:.75rem;color:var(--text3);display:flex;gap:.75rem}
+
+/* LIST ITEM */
+.media-list-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  display:flex;align-items:center;gap:1rem;padding:.85rem 1rem;
+  transition:all .15s;
+}
+.media-list-item:hover{border-color:var(--border2)}
+.list-thumb{width:48px;height:48px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.list-info{flex:1;min-width:0}
+.list-name{font-size:.875rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-meta{font-size:.75rem;color:var(--text3);margin-top:.15rem}
+.list-actions{display:flex;gap:.5rem;flex-shrink:0}
+
+/* MODAL */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);
+  z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--radius);max-width:800px;width:100%;
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6);
+}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Syne',sans-serif;font-weight:600;font-size:1.05rem}
+.modal-close{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:1.3rem;line-height:1;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.5rem}
+.modal-preview{width:100%;max-height:50vh;object-fit:contain;border-radius:var(--radius-sm);margin-bottom:1.25rem;background:var(--bg)}
+.modal-preview-video{width:100%;max-height:50vh;border-radius:var(--radius-sm);margin-bottom:1.25rem}
+.modal-meta{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem}
+.meta-row{font-size:.83rem}
+.meta-label{color:var(--text3);margin-bottom:.15rem}
+.meta-value{font-weight:500}
+.modal-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+
+/* SHARE LINK */
+.share-link-box{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:.65rem 1rem;font-size:.82rem;color:var(--accent2);
+  word-break:break-all;margin:.75rem 0;cursor:pointer;transition:background .15s;
+}
+.share-link-box:hover{background:var(--bg4)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:.75rem 1.25rem;
+  font-size:.875rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.4);
+  transform:translateY(8px);opacity:0;transition:all .25s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(45,212,191,.4);color:var(--teal)}
+.toast.error{border-color:rgba(239,68,68,.4);color:#fca5a5}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--text3)}
+.empty-icon{font-size:3rem;margin-bottom:1rem;display:block}
+.empty-state h3{font-size:1.05rem;font-weight:500;color:var(--text2);margin-bottom:.4rem}
+.empty-state p{font-size:.875rem}
+
+/* SEARCH */
+.search-bar{
+  display:flex;gap:.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;
+}
+.search-input-wrap{flex:1;min-width:200px;position:relative}
+.search-input-wrap input{
+  width:100%;padding:.6rem 1rem .6rem 2.4rem;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-size:.875rem;outline:none;transition:border-color .15s;
+  font-family:'DM Sans',sans-serif;
+}
+.search-input-wrap input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.9rem;pointer-events:none}
+.filter-btns{display:flex;gap:.4rem}
+.filter-btn{
+  padding:.45rem .85rem;border-radius:var(--radius-sm);background:var(--card);
+  border:1px solid var(--border);color:var(--text2);font-size:.8rem;cursor:pointer;
+  transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.filter-btn.active{background:rgba(124,110,247,.15);border-color:var(--accent);color:var(--accent2)}
+
+/* SETTINGS */
+.settings-section{margin-bottom:2rem}
+.settings-section h3{font-family:'Syne',sans-serif;font-weight:600;font-size:.95rem;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:.875rem;font-weight:500}
+.settings-desc{font-size:.8rem;color:var(--text3);margin-top:.2rem}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sidebar{display:none}
+  .media-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .modal-meta{grid-template-columns:1fr}
+  .main-content{padding:1.25rem}
+}
+.hidden{display:none!important}
+
+/* GLOW DECORATION */
+.glow-dot{
+  position:fixed;pointer-events:none;border-radius:50%;filter:blur(80px);z-index:0;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .3s ease forwards}
+</style>
+</head>
+<body>
+
+<!-- GLOW DECORATIONS -->
+<div class="glow-dot" style="width:400px;height:400px;background:rgba(124,110,247,.06);top:-100px;right:-100px"></div>
+<div class="glow-dot" style="width:300px;height:300px;background:rgba(244,114,182,.04);bottom:20%;left:-80px"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">MediaDrop</span>
+  <div class="nav-actions" id="navActions">
+    <button class="btn btn-ghost" onclick="showPage('login')">Iniciar sesión</button>
+    <button class="btn btn-primary" onclick="showPage('register')">Registrarse</button>
+  </div>
+  <div class="nav-actions hidden" id="navLogged">
+    <span style="font-size:.85rem;color:var(--text2)" id="navGreet"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════ LOGIN PAGE ══════════ -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-card fade-in">
+      <h2 class="auth-title">Bienvenido de nuevo</h2>
+      <p class="auth-sub">Inicia sesión para ver tus archivos</p>
+      <div class="error-msg" id="loginError"></div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="loginEmail" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary auth-submit" onclick="doLogin()">Iniciar sesión</button>
+      <div class="auth-switch">
+        ¿Sin cuenta? <a onclick="showPage('register')">Regístrate gratis</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ REGISTER PAGE ══════════ -->
+<div class="page" id="page-register">
+  <div class="auth-wrap">
+    <div class="auth-card fade-in">
+      <h2 class="auth-title">Crear cuenta</h2>
+      <p class="auth-sub">Gratis y sin límite de calidad</p>
+      <div class="error-msg" id="regError"></div>
+      <div class="success-msg" id="regSuccess"></div>
+      <div class="field">
+        <label>Nombre de usuario</label>
+        <input type="text" id="regUser" placeholder="tuusuario" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="regEmail" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="regPass" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary auth-submit" onclick="doRegister()">Crear cuenta</button>
+      <div class="auth-switch">
+        ¿Ya tienes cuenta? <a onclick="showPage('login')">Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div class="page" id="page-dash">
+  <div class="dash-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Menú</div>
+        <div class="sidebar-item active" onclick="switchTab('upload')" id="tab-upload">
+          <span class="icon">⬆</span> Subir archivos
+        </div>
+        <div class="sidebar-item" onclick="switchTab('gallery')" id="tab-gallery">
+          <span class="icon">◫</span> Mi galería
+        </div>
+        <div class="sidebar-item" onclick="switchTab('settings')" id="tab-settings">
+          <span class="icon">⚙</span> Configuración
+        </div>
+      </div>
+      <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
+        <div class="user-info" style="margin:0">
+          <div class="avatar" id="sidebarAvatar">U</div>
+          <div>
+            <div class="user-name" id="sidebarName">Usuario</div>
+            <div class="user-email" id="sidebarEmail">correo@mail.com</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+      <!-- ─── TAB: UPLOAD ─── -->
+      <div id="view-upload" class="tab-view fade-in">
+        <div class="page-header">
+          <h2>Subir archivos</h2>
+          <p>Las fotos y videos se guardan en calidad original — sin compresión</p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🖼️</div>
+            <div class="stat-value" id="statPhotos">0</div>
+            <div class="stat-label">Fotos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎬</div>
+            <div class="stat-value" id="statVideos">0</div>
+            <div class="stat-label">Videos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💾</div>
+            <div class="stat-value" id="statSize">0 MB</div>
+            <div class="stat-label">Almacenado</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⬇</div>
+            <div class="stat-value" id="statDownloads">0</div>
+            <div class="stat-label">Descargas</div>
+          </div>
+        </div>
+
+        <!-- DROP ZONE -->
+        <div class="upload-zone" id="dropZone">
+          <input type="file" id="fileInput" multiple accept="image/*,video/*" onchange="handleFiles(this.files)">
+          <span class="upload-icon">📁</span>
+          <h3>Arrastra archivos aquí o haz clic para seleccionar</h3>
+          <p>Fotos y videos en cualquier formato — calidad 100% original</p>
+          <p class="upload-note">JPG · PNG · RAW · HEIC · MP4 · MOV · AVI · MKV · WebM y más</p>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-wrap" id="progressWrap">
+          <div class="section-header">
+            <span class="section-title">Subiendo archivos...</span>
+          </div>
+          <div id="progressList"></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: GALLERY ─── -->
+      <div id="view-gallery" class="tab-view hidden fade-in">
+        <div class="page-header">
+          <h2>Mi galería</h2>
+          <p>Todos tus archivos en calidad original</p>
+        </div>
+
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar archivos..." oninput="filterMedia()">
+          </div>
+          <div class="filter-btns">
+            <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+            <button class="filter-btn" onclick="setFilter('image',this)">Fotos</button>
+            <button class="filter-btn" onclick="setFilter('video',this)">Videos</button>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title" id="galleryCount">0 archivos</span>
+          <div class="view-toggle">
+            <button class="view-btn active" id="gridBtn" onclick="setView('grid')" title="Cuadrícula">⊞</button>
+            <button class="view-btn" id="listBtn" onclick="setView('list')" title="Lista">≡</button>
+          </div>
+        </div>
+
+        <div class="media-grid" id="mediaGrid"></div>
+        <div class="empty-state hidden" id="emptyState">
+          <span class="empty-icon">📭</span>
+          <h3>Sin archivos</h3>
+          <p>Sube fotos o videos para verlos aquí</p>
+        </div>
+      </div>
+
+      <!-- ─── TAB: SETTINGS ─── -->
+      <div id="view-settings" class="tab-view hidden fade-in">
+        <div class="page-header">
+          <h2>Configuración</h2>
+          <p>Personaliza tu cuenta</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Perfil</h3>
+          <div class="field">
+            <label>Nombre para mostrar</label>
+            <input type="text" id="settingName" placeholder="Tu nombre">
+          </div>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input type="email" id="settingEmail" placeholder="tu@correo.com">
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">Guardar cambios</button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Cambiar contraseña</h3>
+          <div class="field">
+            <label>Contraseña actual</label>
+            <input type="password" id="settingOldPass" placeholder="••••••••">
+          </div>
+          <div class="field">
+            <label>Nueva contraseña</label>
+            <input type="password" id="settingNewPass" placeholder="Mínimo 8 caracteres">
+          </div>
+          <button class="btn btn-ghost" onclick="changePassword()">Cambiar contraseña</button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Cuenta</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Archivos públicos por defecto</div>
+              <div class="settings-desc">Cualquier persona con el enlace puede ver tus archivos</div>
+            </div>
+            <label style="cursor:pointer">
+              <input type="checkbox" id="defaultPublic" style="width:auto"> Activar
+            </label>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label" style="color:#fca5a5">Eliminar cuenta</div>
+              <div class="settings-desc">Esta acción no se puede deshacer</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="toast('Función no disponible en demo','error')">Eliminar</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════ MEDIA MODAL ══════════ -->
+<div class="modal-bg" id="mediaModal" onclick="closeModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Archivo</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalPreview"></div>
+      <div class="modal-meta" id="modalMeta"></div>
+      <div id="shareLinkWrap" class="hidden">
+        <div style="font-size:.82rem;color:var(--text2);margin-bottom:.4rem">🔗 Enlace para compartir</div>
+        <div class="share-link-box" id="shareLinkBox" onclick="copyLink()"></div>
+        <div style="font-size:.75rem;color:var(--text3)">Haz clic en el enlace para copiarlo al portapapeles</div>
+      </div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+//  SUPABASE CONFIG
+// ═══════════════════════════════════════════════════════
+const SUPA_URL = 'https://wnboqxpggbvktrumqcat.supabase.co';
+const SUPA_KEY = 'sb_publishable_xbTlbpq30V9ZwX6xyEx3bA_-LNiuI0p';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let currentUser_ = null;
+let mediaCache  = [];
+let currentFilter = 'all';
+let currentView   = 'grid';
+let currentModalId = null;
+
+// ═══════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'toast'; }, 3200);
+}
+function fmtBytes(b) {
+  if (!b) return '0 B';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1)+' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1)+' MB';
+  return (b/1073741824).toFixed(2)+' GB';
+}
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function initials(name) { return (name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+// ═══════════════════════════════════════════════════════
+//  ROUTING
+// ═══════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTH — SUPABASE
+// ═══════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.textContent='Completa todos los campos.'; errEl.style.display='block'; return; }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { errEl.textContent = error.message; errEl.style.display='block'; return; }
+  enterDash(data.user);
+}
+
+async function doRegister() {
+  const username = document.getElementById('regUser').value.trim();
+  const email    = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass     = document.getElementById('regPass').value;
+  const pass2    = document.getElementById('regPass2').value;
+  const errEl    = document.getElementById('regError');
+  const okEl     = document.getElementById('regSuccess');
+  errEl.style.display='none'; okEl.style.display='none';
+
+  if (!username||!email||!pass||!pass2) { errEl.textContent='Completa todos los campos.'; errEl.style.display='block'; return; }
+  if (pass.length<8) { errEl.textContent='La contraseña debe tener al menos 8 caracteres.'; errEl.style.display='block'; return; }
+  if (pass!==pass2) { errEl.textContent='Las contraseñas no coinciden.'; errEl.style.display='block'; return; }
+
+  const { data, error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { username, display_name: username } }
+  });
+  if (error) { errEl.textContent=error.message; errEl.style.display='block'; return; }
+
+  if (data.user && !data.session) {
+    okEl.textContent = '¡Cuenta creada! Revisa tu correo para confirmar tu cuenta.';
+    okEl.style.display = 'block';
+    return;
+  }
+  enterDash(data.user);
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser_ = null; mediaCache = [];
+  document.getElementById('navActions').classList.remove('hidden');
+  document.getElementById('navLogged').classList.add('hidden');
+  showPage('login');
+}
+
+function enterDash(user) {
+  currentUser_ = user;
+  const meta = user.user_metadata || {};
+  const name  = meta.display_name || meta.username || user.email.split('@')[0];
+  document.getElementById('navActions').classList.add('hidden');
+  document.getElementById('navLogged').classList.remove('hidden');
+  document.getElementById('navGreet').textContent = 'Hola, ' + name;
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarEmail').textContent = user.email;
+  document.getElementById('sidebarAvatar').textContent = initials(name);
+  document.getElementById('settingName').value  = name;
+  document.getElementById('settingEmail').value = user.email;
+  showPage('dash');
+  switchTab('upload');
+  loadMedia();
+}
+
+// ═══════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('view-'+tab).classList.remove('hidden');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'gallery') renderGallery();
+}
+
+// ═══════════════════════════════════════════════════════
+//  LOAD MEDIA FROM SUPABASE
+// ═══════════════════════════════════════════════════════
+async function loadMedia() {
+  if (!currentUser_) return;
+  const { data, error } = await sb
+    .from('media')
+    .select('*')
+    .eq('user_id', currentUser_.id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  mediaCache = data || [];
+  updateStats();
+  renderGallery();
+}
+
+// ═══════════════════════════════════════════════════════
+//  FILE UPLOAD — Supabase Storage + media table
+// ═══════════════════════════════════════════════════════
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+
+function handleFiles(files) {
+  if (!files.length) return;
+  document.getElementById('progressWrap').style.display = 'block';
+  Array.from(files).forEach(file => {
+    const isImg = file.type.startsWith('image/');
+    const isVid = file.type.startsWith('video/');
+    if (!isImg && !isVid) { toast(file.name+': tipo no soportado', 'error'); return; }
+    const itemId = uid();
+    document.getElementById('progressList').insertAdjacentHTML('beforeend', `
+      <div class="progress-item" id="pi-${itemId}">
+        <div class="progress-top">
+          <span class="file-icon">${isImg?'🖼️':'🎬'}</span>
+          <span class="file-name">${file.name}</span>
+          <span class="file-size">${fmtBytes(file.size)}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="pf-${itemId}" style="width:0%"></div></div>
+        <div class="progress-label" id="pl-${itemId}">Subiendo…</div>
+      </div>`);
+    uploadToSupabase(file, itemId, isImg ? 'image' : 'video');
+  });
+}
+
+async function uploadToSupabase(file, itemId, mediaType) {
+  const fillEl  = document.getElementById('pf-'+itemId);
+  const labelEl = document.getElementById('pl-'+itemId);
+
+  // animated progress (Supabase JS v2 doesn't expose upload progress natively)
+  let prog = 0;
+  const iv = setInterval(() => {
+    prog = Math.min(prog + Math.random()*12+3, 90);
+    fillEl.style.width = prog+'%';
+    labelEl.textContent = Math.round(prog)+'% subido…';
+  }, 150);
+
+  try {
+    const ext       = file.name.split('.').pop();
+    const storedName = `${currentUser_.id}/${uid()}.${ext}`;
+
+    // 1. Upload file to Supabase Storage bucket "media"
+    const { error: upErr } = await sb.storage
+      .from('media')
+      .upload(storedName, file, { contentType: file.type, upsert: false });
+    if (upErr) throw upErr;
+
+    // 2. Get public URL
+    const { data: urlData } = sb.storage.from('media').getPublicUrl(storedName);
+    const publicUrl = urlData.publicUrl;
+
+    // 3. Insert record into media table
+    const { data: row, error: dbErr } = await sb.from('media').insert({
+      user_id:       currentUser_.id,
+      original_name: file.name,
+      stored_name:   storedName,
+      storage_path:  publicUrl,
+      file_size:     file.size,
+      mime_type:     file.type,
+      media_type:    mediaType,
+      is_public:     false,
+      download_count:0,
+    }).select().single();
+    if (dbErr) throw dbErr;
+
+    clearInterval(iv);
+    fillEl.style.width = '100%';
+    labelEl.textContent = '✓ Listo';
+    mediaCache.unshift(row);
+    updateStats();
+    toast(file.name+' subido correctamente ✓', 'success');
+  } catch(err) {
+    clearInterval(iv);
+    fillEl.style.width = '100%';
+    fillEl.style.background = '#ef4444';
+    labelEl.textContent = '✗ Error: ' + (err.message || 'fallo al subir');
+    toast('Error subiendo '+file.name, 'error');
+  }
+
+  setTimeout(() => {
+    document.getElementById('pi-'+itemId)?.remove();
+    if (!document.getElementById('progressList').children.length)
+      document.getElementById('progressWrap').style.display='none';
+  }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════════════
+function updateStats() {
+  const photos    = mediaCache.filter(m => m.media_type==='image');
+  const videos    = mediaCache.filter(m => m.media_type==='video');
+  const totalSize = mediaCache.reduce((s,m) => s+(m.file_size||0), 0);
+  const totalDL   = mediaCache.reduce((s,m) => s+(m.download_count||0), 0);
+  document.getElementById('statPhotos').textContent    = photos.length;
+  document.getElementById('statVideos').textContent    = videos.length;
+  document.getElementById('statSize').textContent      = fmtBytes(totalSize);
+  document.getElementById('statDownloads').textContent = totalDL;
+}
+
+// ═══════════════════════════════════════════════════════
+//  GALLERY
+// ═══════════════════════════════════════════════════════
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById('gridBtn').classList.toggle('active', v==='grid');
+  document.getElementById('listBtn').classList.toggle('active', v==='list');
+  renderGallery();
+}
+function filterMedia() { renderGallery(); }
+
+function renderGallery() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let items = [...mediaCache];
+  if (currentFilter !== 'all') items = items.filter(m => m.media_type===currentFilter);
+  if (q) items = items.filter(m => (m.original_name||'').toLowerCase().includes(q));
+
+  const grid    = document.getElementById('mediaGrid');
+  const empty   = document.getElementById('emptyState');
+  const countEl = document.getElementById('galleryCount');
+  countEl.textContent = items.length+' archivo'+(items.length!==1?'s':'');
+
+  if (!items.length) { grid.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  grid.className = 'media-grid'+(currentView==='list'?' list':'');
+
+  const thumb = m => m.media_type==='image'
+    ? `<img src="${m.storage_path}" alt="${m.original_name}" loading="lazy" style="width:100%;height:160px;object-fit:cover">`
+    : `<video src="${m.storage_path}" preload="metadata" style="width:100%;height:160px;object-fit:cover"></video>`;
+
+  if (currentView === 'grid') {
+    grid.innerHTML = items.map(m => `
+      <div class="media-card" onclick="openModal('${m.id}')">
+        <div class="media-thumb-wrap">
+          ${thumb(m)}
+          <div class="media-overlay">
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();downloadMedia('${m.id}')">⬇ Descargar</button>
+          </div>
+          <span class="media-badge">${m.media_type==='video'?'▶':'🖼'}</span>
+        </div>
+        <div class="media-info">
+          <div class="media-name" title="${m.original_name}">${m.original_name}</div>
+          <div class="media-meta"><span>${fmtBytes(m.file_size)}</span><span>⬇ ${m.download_count}</span></div>
+        </div>
+      </div>`).join('');
+  } else {
+    grid.innerHTML = items.map(m => `
+      <div class="media-list-item">
+        <div class="list-thumb">
+          ${m.media_type==='image'
+            ? `<img src="${m.storage_path}" alt="" style="width:48px;height:48px;border-radius:8px;object-fit:cover">`
+            : `<span style="font-size:1.5rem">🎬</span>`}
+        </div>
+        <div class="list-info">
+          <div class="list-name">${m.original_name}</div>
+          <div class="list-meta">${fmtBytes(m.file_size)} · ${m.mime_type} · ⬇ ${m.download_count} descargas</div>
+        </div>
+        <div class="list-actions">
+          <button class="btn btn-teal btn-sm" onclick="openModal('${m.id}')">Ver</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadMedia('${m.id}')">⬇</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMedia('${m.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════
+function openModal(id) {
+  const m = mediaCache.find(x => x.id===id);
+  if (!m) return;
+  currentModalId = id;
+  document.getElementById('modalTitle').textContent = m.original_name;
+  document.getElementById('modalPreview').innerHTML = m.media_type==='image'
+    ? `<img src="${m.storage_path}" alt="${m.original_name}" class="modal-preview">`
+    : `<video src="${m.storage_path}" controls class="modal-preview-video"></video>`;
+  document.getElementById('modalMeta').innerHTML = `
+    <div class="meta-row"><div class="meta-label">Nombre</div><div class="meta-value">${m.original_name}</div></div>
+    <div class="meta-row"><div class="meta-label">Tamaño</div><div class="meta-value">${fmtBytes(m.file_size)}</div></div>
+    <div class="meta-row"><div class="meta-label">Formato</div><div class="meta-value">${m.mime_type}</div></div>
+    <div class="meta-row"><div class="meta-label">Subido</div><div class="meta-value">${new Date(m.created_at).toLocaleDateString('es-MX')}</div></div>
+    <div class="meta-row"><div class="meta-label">Descargas</div><div class="meta-value">${m.download_count}</div></div>
+    <div class="meta-row"><div class="meta-label">Visibilidad</div><div class="meta-value">${m.is_public?'🌐 Público':'🔒 Privado'}</div></div>`;
+  const shareWrap = document.getElementById('shareLinkWrap');
+  if (m.is_public) {
+    document.getElementById('shareLinkBox').textContent = m.storage_path;
+    shareWrap.classList.remove('hidden');
+  } else { shareWrap.classList.add('hidden'); }
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn btn-primary" onclick="downloadMedia('${m.id}')">⬇ Descargar original</button>
+    <button class="btn btn-ghost" onclick="togglePublic('${m.id}')">${m.is_public?'🔒 Hacer privado':'🌐 Hacer público'}</button>
+    <button class="btn btn-ghost" onclick="copyShareLink('${m.id}')">🔗 Copiar enlace</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteMedia('${m.id}');closeModal()">🗑 Eliminar</button>`;
+  document.getElementById('mediaModal').classList.add('open');
+}
+function closeModal() { document.getElementById('mediaModal').classList.remove('open'); currentModalId=null; }
+function closeModalOnBg(e) { if(e.target===document.getElementById('mediaModal')) closeModal(); }
+
+// ═══════════════════════════════════════════════════════
+//  MEDIA ACTIONS
+// ═══════════════════════════════════════════════════════
+async function downloadMedia(id) {
+  const m = mediaCache.find(x => x.id===id);
+  if (!m) return;
+  // increment download count in DB
+  await sb.from('media').update({ download_count: (m.download_count||0)+1 }).eq('id', id);
+  m.download_count = (m.download_count||0)+1;
+  updateStats();
+  if (document.getElementById('mediaModal').classList.contains('open')) openModal(id);
+  // force download of original file
+  const res  = await fetch(m.storage_path);
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = m.original_name; a.click();
+  URL.revokeObjectURL(url);
+  toast('Descargando '+m.original_name+' en calidad original ✓','success');
+}
+
+async function deleteMedia(id) {
+  if (!confirm('¿Eliminar este archivo permanentemente?')) return;
+  const m = mediaCache.find(x => x.id===id);
+  if (!m) return;
+  // soft delete in DB
+  await sb.from('media').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+  // remove from storage
+  await sb.storage.from('media').remove([m.stored_name]);
+  mediaCache = mediaCache.filter(x => x.id!==id);
+  updateStats(); renderGallery();
+  toast('Archivo eliminado','');
+}
+
+async function togglePublic(id) {
+  const m = mediaCache.find(x => x.id===id);
+  if (!m) return;
+  const newVal = !m.is_public;
+  await sb.from('media').update({ is_public: newVal }).eq('id', id);
+  m.is_public = newVal;
+  openModal(id);
+  toast(newVal?'Archivo ahora es público':'Archivo ahora es privado','success');
+}
+
+function copyLink() { copyShareLink(currentModalId); }
+function copyShareLink(id) {
+  const m = mediaCache.find(x => x.id===id);
+  if (!m) return;
+  if (!m.is_public) { toast('Haz el archivo público primero','error'); return; }
+  navigator.clipboard.writeText(m.storage_path)
+    .then(()=>toast('Enlace copiado ✓','success'))
+    .catch(()=>toast('No se pudo copiar','error'));
+}
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════════
+async function saveSettings() {
+  const name = document.getElementById('settingName').value.trim();
+  const { error } = await sb.auth.updateUser({ data: { display_name: name } });
+  if (error) { toast('Error: '+error.message,'error'); return; }
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = initials(name);
+  toast('Cambios guardados ✓','success');
+}
+
+async function changePassword() {
+  const n = document.getElementById('settingNewPass').value;
+  if (!n || n.length<8) { toast('La contraseña debe tener al menos 8 caracteres','error'); return; }
+  const { error } = await sb.auth.updateUser({ password: n });
+  if (error) { toast('Error: '+error.message,'error'); return; }
+  document.getElementById('settingOldPass').value='';
+  document.getElementById('settingNewPass').value='';
+  toast('Contraseña actualizada ✓','success');
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT — check existing session
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) { enterDash(session.user); }
+  else { showPage('login'); }
+
+  sb.auth.onAuthStateChange((_event, session) => {
+    if (!session) { showPage('login'); }
+  });
+})();
+</script>
+</body>
+</html>
